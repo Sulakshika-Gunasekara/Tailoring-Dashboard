@@ -5,6 +5,7 @@ import { InquiryList } from './components/InquiryList';
 import { JobBoard } from './components/JobBoard';
 import { CalendarView } from './components/CalendarView';
 import { ClientCRM } from './components/ClientCRM';
+import { UserPortal } from './components/UserPortal';
 import { generateBusinessInsights } from './services/geminiService';
 import { MOCK_ORDERS, MOCK_INQUIRIES } from './constants';
 import { BrainCircuit, Sparkles } from 'lucide-react';
@@ -26,6 +27,8 @@ const App: React.FC = () => {
         return <ClientCRM />;
       case 'insights':
         return <AIInsightsView />;
+      case 'client_portal':
+        return <UserPortal />;
       default:
         return <Dashboard />;
     }

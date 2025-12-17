@@ -15,6 +15,7 @@ export const Layout: React.FC<LayoutProps> = ({ currentView, setCurrentView, chi
     { id: 'calendar', label: 'Calendar', icon: Calendar },
     { id: 'crm', label: 'Clients', icon: Users },
     { id: 'insights', label: 'Intelligence', icon: BrainCircuit },
+    { id: 'client_portal', label: 'Client Portal', icon: Users }, // Demo Entry
   ];
 
   return (

@@ -62,6 +62,16 @@ export interface Order {
   tailorAssigned?: string;
   measurements: Record<string, number>;
   notes: string;
+
+  // User Portal Fields
+  suggestedFitSlots?: string[];
+  selectedFitSlot?: string;
+  rating?: number;
+  feedback?: string;
+  changeRequest?: string;
+  changeRequestStatus?: 'Pending' | 'Reviewing' | 'Scheduled' | 'Resolved';
+  appointmentSuggestedSlots?: string[];
+  appointmentSelectedSlot?: string;
 }
 
 export interface Appointment {
