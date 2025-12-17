@@ -80,15 +80,6 @@ export const Layout: React.FC<LayoutProps> = ({ currentView, setCurrentView, use
             </h2>
             
             <div className="flex items-center space-x-6">
-                <div className="relative group">
-                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-hover:text-gray-600 transition-colors" />
-                  <input 
-                    type="text" 
-                    placeholder="Search..." 
-                    className="pl-9 pr-4 py-1.5 bg-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-200 focus:bg-white w-64 transition-all"
-                  />
-                </div>
-                
                 <button className="relative text-gray-500 hover:text-black transition-colors">
                   <Bell size={20} />
                   <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
