@@ -11,9 +11,34 @@ import { MOCK_ORDERS, MOCK_INQUIRIES } from './constants';
 import { BrainCircuit, Sparkles } from 'lucide-react';
 
 const App: React.FC = () => {
+  // 'admin' | 'client'
+  const [userRole, setUserRole] = useState<'admin' | 'client'>('admin');
   const [currentView, setCurrentView] = useState('dashboard');
 
+  // Switch role handler (for demo)
+  const switchRole = (role: 'admin' | 'client') => {
+    setUserRole(role);
+    if (role === 'client') {
+      setCurrentView('client_orders');
+    } else {
+      setCurrentView('dashboard');
+    }
+  };
+
   const renderView = () => {
+    if (userRole === 'client') {
+        // Client only has access to portal views
+        if (currentView === 'client_profile') {
+             return (
+                 <div className="flex items-center justify-center h-full text-gray-400">
+                     <p>Profile Settings (Demo Placeholder)</p>
+                 </div>
+             );
+        }
+        return <UserPortal />;
+    }
+
+    // Admin Views
     switch (currentView) {
       case 'dashboard':
         return <Dashboard />;
@@ -27,15 +52,18 @@ const App: React.FC = () => {
         return <ClientCRM />;
       case 'insights':
         return <AIInsightsView />;
-      case 'client_portal':
-        return <UserPortal />;
       default:
         return <Dashboard />;
     }
   };
 
   return (
-    <Layout currentView={currentView} setCurrentView={setCurrentView}>
+    <Layout
+      currentView={currentView}
+      setCurrentView={setCurrentView}
+      userRole={userRole}
+      onSwitchRole={switchRole}
+    >
       {renderView()}
     </Layout>
   );
