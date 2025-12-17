@@ -5,11 +5,10 @@ interface LayoutProps {
   currentView: string;
   setCurrentView: (view: string) => void;
   userRole: 'admin' | 'client';
-  onSwitchRole: (role: 'admin' | 'client') => void;
   children: React.ReactNode;
 }
 
-export const Layout: React.FC<LayoutProps> = ({ currentView, setCurrentView, userRole, onSwitchRole, children }) => {
+export const Layout: React.FC<LayoutProps> = ({ currentView, setCurrentView, userRole, children }) => {
   const adminNavItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'inquiries', label: 'Inquiries', icon: Inbox },
@@ -65,14 +64,6 @@ export const Layout: React.FC<LayoutProps> = ({ currentView, setCurrentView, use
         </nav>
 
         <div className="p-4 border-t border-gray-200 mx-4 mt-auto space-y-2">
-            {/* Demo Role Switcher */}
-            <button
-                onClick={() => onSwitchRole(userRole === 'admin' ? 'client' : 'admin')}
-                className="w-full flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-xs font-medium py-2 rounded-lg transition-colors"
-            >
-                Switch to {userRole === 'admin' ? 'Client' : 'Admin'}
-            </button>
-
           <button className="flex items-center space-x-2 text-gray-500 hover:text-gray-900 transition-colors text-sm">
             <LogOut size={16} />
             <span>Sign Out</span>
