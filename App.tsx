@@ -38,11 +38,6 @@ const App: React.FC = () => {
       setOrders(prev => prev.map(o => o.id === orderId ? { ...o, ...updates } : o));
   };
 
-  // Demo switch (still useful inside layout, but now integrated with login state conceptually)
-  const switchRole = (role: 'admin' | 'client') => {
-    handleLogin(role);
-  };
-
   const renderView = () => {
     if (userRole === 'client') {
         // Client only has access to portal views
@@ -84,7 +79,6 @@ const App: React.FC = () => {
       currentView={currentView}
       setCurrentView={setCurrentView}
       userRole={userRole}
-      onSwitchRole={switchRole}
     >
       {renderView()}
     </Layout>
