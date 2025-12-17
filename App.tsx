@@ -11,6 +11,7 @@ import { MOCK_ORDERS, MOCK_INQUIRIES, MOCK_CURRENT_USER_ID } from './constants';
 import { BrainCircuit, Sparkles } from 'lucide-react';
 import { Order } from './types';
 import { Login } from './components/Login';
+import { ClientProfile } from './components/ClientProfile';
 
 const App: React.FC = () => {
   // Authentication State
@@ -42,11 +43,7 @@ const App: React.FC = () => {
     if (userRole === 'client') {
         // Client only has access to portal views
         if (currentView === 'client_profile') {
-             return (
-                 <div className="flex items-center justify-center h-full text-gray-400">
-                     <p>Profile Settings (Demo Placeholder)</p>
-                 </div>
-             );
+             return <ClientProfile />;
         }
         return <UserPortal orders={orders} onUpdateOrder={handleUpdateOrder} currentUserId={currentUserId} />;
     }
