@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
-import { MOCK_CLIENTS, MOCK_ORDERS } from '../constants';
+import { MOCK_CLIENTS } from '../constants';
 import { Client, Order } from '../types';
-import { Phone, Mail, MapPin, Search, User, Ruler, History, ArrowUpRight } from 'lucide-react';
+import { Phone, Mail, Search, Ruler, History, ArrowUpRight, Calendar } from 'lucide-react';
 
-export const ClientCRM: React.FC = () => {
+interface ClientCRMProps {
+    orders: Order[];
+}
+
+export const ClientCRM: React.FC<ClientCRMProps> = ({ orders }) => {
   const [selectedClient, setSelectedClient] = useState<Client>(MOCK_CLIENTS[0]);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -12,7 +16,8 @@ export const ClientCRM: React.FC = () => {
     c.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const clientOrders = MOCK_ORDERS.filter(o => o.clientId === selectedClient.id);
+  const clientOrders = orders.filter(o => o.clientId === selectedClient.id);
+  const appointmentRequests = clientOrders.filter(o => o.changeRequestStatus && o.changeRequestStatus !== 'Resolved');
 
   return (
     <div className="flex h-full gap-8">
@@ -76,10 +81,34 @@ export const ClientCRM: React.FC = () => {
                     </div>
                 </div>
             </div>
-            <button className="bg-black text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors shadow-lg shadow-gray-200">
-                Edit Profile
-            </button>
          </div>
+
+         {/* Appointment/Change Requests Alert */}
+         {appointmentRequests.length > 0 && (
+             <div className="mb-6">
+                 {appointmentRequests.map(req => (
+                     <div key={req.id} className="bg-amber-50 border border-amber-100 p-4 rounded-xl flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-amber-100 text-amber-600 rounded-lg">
+                                <Calendar size={20} />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-amber-900">Appointment Request: {req.garmentType}</h4>
+                                <p className="text-xs text-amber-700">{req.changeRequestStatus} - "{req.changeRequest}"</p>
+                                {req.appointmentSelectedSlot && (
+                                     <p className="text-xs font-semibold text-amber-800 mt-1">
+                                         Client selected: {new Date(req.appointmentSelectedSlot).toLocaleString()}
+                                     </p>
+                                )}
+                            </div>
+                        </div>
+                        <button className="bg-white text-amber-900 border border-amber-200 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-amber-100">
+                            Manage
+                        </button>
+                     </div>
+                 ))}
+             </div>
+         )}
 
          <div className="grid grid-cols-2 gap-6">
             {/* Measurements Card */}

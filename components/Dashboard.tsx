@@ -1,14 +1,18 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { AlertCircle, CheckCircle, Clock, TrendingUp, ChevronRight } from 'lucide-react';
-import { MOCK_ORDERS, MOCK_INQUIRIES, MOCK_APPOINTMENTS } from '../constants';
+import { MOCK_INQUIRIES, MOCK_APPOINTMENTS } from '../constants';
 import { OrderStatus } from '../types';
 
-export const Dashboard: React.FC = () => {
-  const activeOrders = MOCK_ORDERS.filter(o => o.status !== OrderStatus.DELIVERED && o.status !== OrderStatus.READY).length;
+interface DashboardProps {
+    orders: Order[];
+}
+
+export const Dashboard: React.FC<DashboardProps> = ({ orders }) => {
+  const activeOrders = orders.filter(o => o.status !== OrderStatus.DELIVERED && o.status !== OrderStatus.READY).length;
   const pendingInquiries = MOCK_INQUIRIES.filter(i => i.status === 'New').length;
   const todayAppointments = MOCK_APPOINTMENTS.filter(a => new Date(a.date).getDate() === 27).length; // Mock logic for demo
-  const readyOrders = MOCK_ORDERS.filter(o => o.status === OrderStatus.READY).length;
+  const readyOrders = orders.filter(o => o.status === OrderStatus.READY).length;
 
   const revenueData = [
     { name: 'Mon', revenue: 1200 },
@@ -110,7 +114,7 @@ export const Dashboard: React.FC = () => {
         <div className="apple-card p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col">
           <h3 className="text-lg font-bold text-gray-900 mb-6">Action Items</h3>
           <div className="flex-1 space-y-4 overflow-y-auto pr-2">
-            {MOCK_ORDERS.filter(o => o.status === OrderStatus.FIRST_FIT).map(order => (
+            {orders.filter(o => o.status === OrderStatus.FIRST_FIT).map(order => (
               <div key={order.id} className="group p-4 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer flex items-center justify-between">
                 <div className="flex items-start gap-3">
                     <div className="w-2 h-2 mt-2 rounded-full bg-red-500"></div>
