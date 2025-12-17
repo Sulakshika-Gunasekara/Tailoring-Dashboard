@@ -2,10 +2,12 @@ import { GoogleGenAI } from "@google/genai";
 import { Client, Inquiry, Order } from "../types";
 
 // Initialize Gemini Client
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// @ts-ignore
+const ai = import.meta.env.VITE_API_KEY ? new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY }) : null;
 const modelId = 'gemini-2.5-flash';
 
 export const analyzeInquiryPsychology = async (inquiry: Inquiry, clientHistory?: Client): Promise<string> => {
+  if (!ai) return JSON.stringify({ suggested_approach: "Mock AI: key not configured." });
   try {
     const prompt = `
       Act as an expert tailor and sales psychologist. Analyze this inquiry and client history.
@@ -30,7 +32,7 @@ export const analyzeInquiryPsychology = async (inquiry: Inquiry, clientHistory?:
       config: { responseMimeType: "application/json" }
     });
 
-    return response.text || "{}";
+    return response.text() || "{}";
   } catch (error) {
     console.error("AI Error:", error);
     return JSON.stringify({ error: "Failed to analyze inquiry." });
@@ -38,6 +40,7 @@ export const analyzeInquiryPsychology = async (inquiry: Inquiry, clientHistory?:
 };
 
 export const suggestJobAdjustments = async (order: Order): Promise<string> => {
+  if (!ai) return "Mock AI: No insights available (Key missing).";
   try {
     const prompt = `
       Act as a master tailor. Review this job card for potential risks or suggestions.
@@ -56,7 +59,7 @@ export const suggestJobAdjustments = async (order: Order): Promise<string> => {
       contents: prompt,
     });
 
-    return response.text || "No insights available.";
+    return response.text() || "No insights available.";
   } catch (error) {
     console.error("AI Error:", error);
     return "Unable to generate tailoring insights at this time.";
@@ -64,6 +67,7 @@ export const suggestJobAdjustments = async (order: Order): Promise<string> => {
 };
 
 export const generateBusinessInsights = async (orders: Order[], inquiries: Inquiry[]): Promise<string> => {
+  if (!ai) return "Mock AI: Business insights unavailable.";
   try {
     const prompt = `
       Analyze these business metrics for a bespoke tailoring shop.
@@ -80,7 +84,7 @@ export const generateBusinessInsights = async (orders: Order[], inquiries: Inqui
         contents: prompt
     });
     
-    return response.text || "No insights available.";
+    return response.text() || "No insights available.";
   } catch (error) {
      console.error("AI Error:", error);
      return "Unable to generate business insights.";
