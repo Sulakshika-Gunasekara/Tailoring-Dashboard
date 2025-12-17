@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { MOCK_CLIENTS } from '../constants';
 import { Client, Order } from '../types';
-import { Phone, Mail, Search, Ruler, History, ArrowUpRight, Calendar } from 'lucide-react';
+import { Phone, Mail, Search, Ruler, History, ArrowUpRight, Calendar, MessageSquare, X, Send } from 'lucide-react';
+import { sendSMS } from '../services/smsService';
 
 interface ClientCRMProps {
     orders: Order[];
@@ -11,6 +12,12 @@ export const ClientCRM: React.FC<ClientCRMProps> = ({ orders }) => {
   const [selectedClient, setSelectedClient] = useState<Client>(MOCK_CLIENTS[0]);
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Message Modal State
+  const [isMsgModalOpen, setMsgModalOpen] = useState(false);
+  const [msgBody, setMsgBody] = useState('');
+  const [isSending, setIsSending] = useState(false);
+  const [sendSuccess, setSendSuccess] = useState<string | null>(null);
+
   const filteredClients = MOCK_CLIENTS.filter(c => 
     c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     c.email.toLowerCase().includes(searchTerm.toLowerCase())
@@ -19,8 +26,28 @@ export const ClientCRM: React.FC<ClientCRMProps> = ({ orders }) => {
   const clientOrders = orders.filter(o => o.clientId === selectedClient.id);
   const appointmentRequests = clientOrders.filter(o => o.changeRequestStatus && o.changeRequestStatus !== 'Resolved');
 
+  const handleSendMessage = async () => {
+      if (!msgBody.trim()) return;
+      setIsSending(true);
+      try {
+          const result = await sendSMS(selectedClient.phone, msgBody);
+          if (result.success) {
+              setSendSuccess(`Sent to ${selectedClient.name}`);
+              setMsgBody('');
+              setTimeout(() => {
+                  setSendSuccess(null);
+                  setMsgModalOpen(false);
+              }, 2000);
+          }
+      } catch (error) {
+          console.error("Failed to send", error);
+      } finally {
+          setIsSending(false);
+      }
+  };
+
   return (
-    <div className="flex h-full gap-8">
+    <div className="flex h-full gap-8 relative">
       {/* List Panel */}
       <div className="w-80 bg-white border border-gray-200 rounded-3xl flex flex-col shadow-sm overflow-hidden">
         <div className="p-4 border-b border-gray-100">
@@ -63,11 +90,22 @@ export const ClientCRM: React.FC<ClientCRMProps> = ({ orders }) => {
                     {selectedClient.name[0]}
                 </div>
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">{selectedClient.name}</h1>
+                    <div className="flex justify-between items-start w-full">
+                        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">{selectedClient.name}</h1>
+                    </div>
+
                     <div className="flex items-center gap-4 mt-3 text-sm text-gray-500">
                         <span className="flex items-center gap-1.5"><Phone size={14} /> {selectedClient.phone}</span>
                         <span className="flex items-center gap-1.5"><Mail size={14} /> {selectedClient.email}</span>
+                        <button
+                            onClick={() => setMsgModalOpen(true)}
+                            className="ml-2 flex items-center gap-1.5 text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                        >
+                            <MessageSquare size={14} />
+                            Message
+                        </button>
                     </div>
+
                     <div className="flex gap-2 mt-6">
                          <span className="px-3 py-1 bg-green-50 text-green-700 rounded-full text-xs font-medium border border-green-100">
                              LTV: ${selectedClient.ltv}
@@ -162,6 +200,74 @@ export const ClientCRM: React.FC<ClientCRMProps> = ({ orders }) => {
             </div>
          </div>
       </div>
+
+      {/* Message Modal */}
+      {isMsgModalOpen && (
+          <div className="absolute inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 rounded-3xl animate-fadeIn">
+              <div className="bg-white p-6 rounded-2xl shadow-xl w-96 border border-gray-200">
+                  <div className="flex justify-between items-center mb-4">
+                      <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                          <MessageSquare size={18} />
+                          Message {selectedClient.name.split(' ')[0]}
+                      </h3>
+                      <button onClick={() => setMsgModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+                          <X size={18} />
+                      </button>
+                  </div>
+
+                  {sendSuccess ? (
+                      <div className="bg-green-50 text-green-700 p-4 rounded-xl text-center font-medium border border-green-100 flex flex-col items-center gap-2">
+                          <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                              <Send size={16} />
+                          </div>
+                          {sendSuccess}
+                      </div>
+                  ) : (
+                      <>
+                        <div className="mb-4">
+                            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">To</label>
+                            <input
+                                disabled
+                                value={selectedClient.phone}
+                                className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-500"
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Message</label>
+                            <textarea
+                                autoFocus
+                                rows={4}
+                                value={msgBody}
+                                onChange={(e) => setMsgBody(e.target.value)}
+                                className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black resize-none"
+                                placeholder="Type your message here..."
+                            />
+                        </div>
+                        <div className="flex justify-end gap-2">
+                            <button
+                                onClick={() => setMsgModalOpen(false)}
+                                className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-lg"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleSendMessage}
+                                disabled={!msgBody.trim() || isSending}
+                                className="px-4 py-2 text-sm font-medium bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 flex items-center gap-2"
+                            >
+                                {isSending ? 'Sending...' : (
+                                    <>
+                                        <span>Send SMS</span>
+                                        <Send size={14} />
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                      </>
+                  )}
+              </div>
+          </div>
+      )}
     </div>
   );
 };
