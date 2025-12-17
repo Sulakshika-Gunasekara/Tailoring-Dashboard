@@ -1,23 +1,19 @@
 import React, { useState } from 'react';
-import { MOCK_ORDERS, MOCK_CURRENT_USER_ID } from '../constants';
+import { MOCK_CURRENT_USER_ID } from '../constants';
 import { Order, OrderStatus } from '../types';
 import { Clock, Star, MessageSquare, AlertCircle, CheckCircle, Calendar, RefreshCcw } from 'lucide-react';
 
-export const UserPortal: React.FC = () => {
-  // Local state to simulate database updates since we are using mocks
-  const [orders, setOrders] = useState<Order[]>(
-    MOCK_ORDERS.filter(o => o.clientId === MOCK_CURRENT_USER_ID)
-  );
+interface UserPortalProps {
+    orders: Order[];
+    onUpdateOrder: (orderId: string, updates: Partial<Order>) => void;
+    currentUserId: string;
+}
 
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+export const UserPortal: React.FC<UserPortalProps> = ({ orders, onUpdateOrder, currentUserId }) => {
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
-  // Helper to update an order in local state
-  const updateOrder = (orderId: string, updates: Partial<Order>) => {
-    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, ...updates } : o));
-    if (selectedOrder && selectedOrder.id === orderId) {
-      setSelectedOrder(prev => prev ? { ...prev, ...updates } : null);
-    }
-  };
+  const userOrders = orders.filter(o => o.clientId === currentUserId);
+  const selectedOrder = userOrders.find(o => o.id === selectedOrderId) || null;
 
   return (
     <div className="flex h-full gap-6">
@@ -25,10 +21,10 @@ export const UserPortal: React.FC = () => {
         <div className="w-1/3 bg-gray-50 rounded-2xl p-4 overflow-y-auto border border-gray-100">
             <h3 className="text-lg font-bold mb-4 px-2">Your Orders</h3>
             <div className="space-y-3">
-                {orders.map(order => (
+                {userOrders.map(order => (
                     <div
                         key={order.id}
-                        onClick={() => setSelectedOrder(order)}
+                        onClick={() => setSelectedOrderId(order.id)}
                         className={`p-4 rounded-xl cursor-pointer transition-all border ${selectedOrder?.id === order.id ? 'bg-white border-black shadow-md' : 'bg-white border-transparent hover:border-gray-200 shadow-sm'}`}
                     >
                         <div className="flex justify-between items-start mb-2">
@@ -52,7 +48,7 @@ export const UserPortal: React.FC = () => {
             {selectedOrder ? (
                 <OrderDetailView
                     order={selectedOrder}
-                    onUpdate={(updates) => updateOrder(selectedOrder.id, updates)}
+                    onUpdate={(updates) => onUpdateOrder(selectedOrder.id, updates)}
                 />
             ) : (
                 <div className="h-full flex flex-col items-center justify-center text-gray-400">

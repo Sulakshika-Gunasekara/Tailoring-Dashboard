@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { MOCK_ORDERS } from '../constants';
 import { Order, OrderStatus } from '../types';
 import { MoreHorizontal, Scissors, Sparkles, ChevronRight } from 'lucide-react';
 import { suggestJobAdjustments } from '../services/geminiService';
 
-export const JobBoard: React.FC = () => {
-  const [orders, setOrders] = useState<Order[]>(MOCK_ORDERS);
+interface JobBoardProps {
+    orders: Order[];
+    onUpdateOrder: (orderId: string, updates: Partial<Order>) => void;
+}
+
+export const JobBoard: React.FC<JobBoardProps> = ({ orders, onUpdateOrder }) => {
   const [aiSuggestion, setAiSuggestion] = useState<{id: string, text: string} | null>(null);
   const [loadingAi, setLoadingAi] = useState(false);
 
@@ -18,7 +21,7 @@ export const JobBoard: React.FC = () => {
   ];
 
   const handleStatusChange = (orderId: string, newStatus: OrderStatus) => {
-    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+    onUpdateOrder(orderId, { status: newStatus });
   };
 
   const handleAiConsult = async (order: Order) => {

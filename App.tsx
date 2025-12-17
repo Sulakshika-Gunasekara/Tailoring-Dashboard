@@ -7,22 +7,40 @@ import { CalendarView } from './components/CalendarView';
 import { ClientCRM } from './components/ClientCRM';
 import { UserPortal } from './components/UserPortal';
 import { generateBusinessInsights } from './services/geminiService';
-import { MOCK_ORDERS, MOCK_INQUIRIES } from './constants';
+import { MOCK_ORDERS, MOCK_INQUIRIES, MOCK_CURRENT_USER_ID } from './constants';
 import { BrainCircuit, Sparkles } from 'lucide-react';
+import { Order } from './types';
+import { Login } from './components/Login';
 
 const App: React.FC = () => {
-  // 'admin' | 'client'
+  // Authentication State
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userRole, setUserRole] = useState<'admin' | 'client'>('admin');
+  const [currentUserId, setCurrentUserId] = useState<string>(''); // For client mode
+
+  // Application Data State (Lifted Up)
+  const [orders, setOrders] = useState<Order[]>(MOCK_ORDERS);
+
   const [currentView, setCurrentView] = useState('dashboard');
 
-  // Switch role handler (for demo)
+  const handleLogin = (role: 'admin' | 'client') => {
+      setUserRole(role);
+      setIsAuthenticated(true);
+      if (role === 'client') {
+          setCurrentUserId(MOCK_CURRENT_USER_ID); // Mocking logged in user
+          setCurrentView('client_orders');
+      } else {
+          setCurrentView('dashboard');
+      }
+  };
+
+  const handleUpdateOrder = (orderId: string, updates: Partial<Order>) => {
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, ...updates } : o));
+  };
+
+  // Demo switch (still useful inside layout, but now integrated with login state conceptually)
   const switchRole = (role: 'admin' | 'client') => {
-    setUserRole(role);
-    if (role === 'client') {
-      setCurrentView('client_orders');
-    } else {
-      setCurrentView('dashboard');
-    }
+    handleLogin(role);
   };
 
   const renderView = () => {
@@ -35,27 +53,31 @@ const App: React.FC = () => {
                  </div>
              );
         }
-        return <UserPortal />;
+        return <UserPortal orders={orders} onUpdateOrder={handleUpdateOrder} currentUserId={currentUserId} />;
     }
 
     // Admin Views
     switch (currentView) {
       case 'dashboard':
-        return <Dashboard />;
+        return <Dashboard orders={orders} />;
       case 'inquiries':
         return <InquiryList />;
       case 'jobs':
-        return <JobBoard />;
+        return <JobBoard orders={orders} onUpdateOrder={handleUpdateOrder} />;
       case 'calendar':
         return <CalendarView />;
       case 'crm':
-        return <ClientCRM />;
+        return <ClientCRM orders={orders} />;
       case 'insights':
-        return <AIInsightsView />;
+        return <AIInsightsView orders={orders} />;
       default:
-        return <Dashboard />;
+        return <Dashboard orders={orders} />;
     }
   };
+
+  if (!isAuthenticated) {
+      return <Login onLogin={handleLogin} />;
+  }
 
   return (
     <Layout
@@ -69,13 +91,13 @@ const App: React.FC = () => {
   );
 };
 
-const AIInsightsView: React.FC = () => {
+const AIInsightsView: React.FC<{orders: Order[]}> = ({ orders }) => {
   const [insight, setInsight] = useState<string>("");
   const [loading, setLoading] = useState(false);
 
   const generateReport = async () => {
     setLoading(true);
-    const result = await generateBusinessInsights(MOCK_ORDERS, MOCK_INQUIRIES);
+    const result = await generateBusinessInsights(orders, MOCK_INQUIRIES);
     setInsight(result);
     setLoading(false);
   }
